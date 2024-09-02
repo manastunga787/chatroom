@@ -9,7 +9,12 @@ if (name.length < 3) {
   rl.close();
   process.exit();
 }
-const socket = new WebSocket(`ws://192.168.29.166:3000/ws?name=${name}`);
+let url1 = `ws://localhost:3000/ws?name=${name}`;
+let url2 = `wss://tunga.online/ws?name=${name}`;
+
+const socket = new WebSocket(url2);
+
+let interval: NodeJS.Timer;
 
 rl.on("line", (data) => {
   socket.send(data.toString());
@@ -23,34 +28,36 @@ socket.addEventListener("message", (message) => {
   console.log(message.data);
 });
 
-socket.addEventListener("error", () => {
+socket.addEventListener("error", (err) => {
   console.log("Error occurred");
+  clearInterval(interval);
   process.exit();
 });
 
 socket.addEventListener("close", () => {
   console.log(chalk.red("closed by server"));
+  clearInterval(interval);
   rl.close();
   //process.exit();
 });
 
-// // socket.onopen = () => {
-// //   setInterval(() => {
-// //     socket.ping("--->");
-// //   }, 10000);
-// // };
+// socket.onopen = () => {
+//   interval = setInterval(() => {
+//     socket.ping("--->");
+//   }, 500);
+// };
 
-// // socket.addEventListener("pong", (event: MessageEvent) => {
-// //   console.log("got a pong from server", event.data.toString());
-// //   //console.log(event);
-// // });
+socket.addEventListener("pong", () => {
+  console.log("got a pong from server");
+  //console.log(event);
+});
 
 // // socket.addEventListener("close", () => {
 // //   console.log("server closed");
 // // });
 
-// socket.addEventListener("ping", () => {
-//   console.log("got a ping from server");
-// });
+socket.addEventListener("ping", () => {
+  console.log("got a ping from server");
+});
 
 // socket.addEventListener("close", () => {});
